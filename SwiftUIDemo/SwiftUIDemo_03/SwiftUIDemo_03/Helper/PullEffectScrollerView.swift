@@ -17,8 +17,43 @@ struct PullEffectScrollerView<Content: View>: View {
     @ViewBuilder var content:Content
 
     var body: some View {
-        Text("Helloworld")
+        ScrollView(.vertical){
+            content
+        }
+        .overlay(alignment: .top){
+             
+        }
+
     }
+    // action view
+    
+    @ViewBuilder
+    private func ActionView() -> some View {
+        HStack(spacing: 0) {
+            ActionButton(.leading)
+            ActionButton(.center)
+            ActionButton(.trailing)
+
+            
+        }
+    }
+    // action button
+    @ViewBuilder
+    
+    private func ActionButton(_position: ActionPosition) -> some View{
+        
+    }
+    
+    private enum ActionPosition:Int{
+        case leading = -1
+        case center = 0
+        case trailing = 1
+    }
+    
+    
+    
+    
+    
 }
 
 

@@ -9,25 +9,31 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-                
-        NavigationStack{
-            PullEffectScrollerView(
-                leadingAction: .init(symbol: "plus", action: {
-                    print("Add New Tab")
-                    
-                }),
-                centerAction: .init(symbol: "arrow.clockwise", action: {
-                    print("Refresh")
-                }),
-                trailingAction: .init(symbol: "xmark", action: {
-                    print("Close Tab")
-                    
-                })) {
-                    DummyView()
-                }
-                .navigationTitle("Homme")
-                .navigationBarTitleDisplayMode(.inline)
-            
+        GeometryReader{
+        
+        let safeAreaInsets =  $0.safeAreaInsets
+        
+                NavigationStack{
+                    PullEffectScrollerView(
+                        actionTopPadding: safeAreaInsets.top + 35,
+                        
+                        
+                        leadingAction: .init(symbol: "plus", action: {
+                            print("Add New Tab")
+                            
+                        }),
+                        centerAction: .init(symbol: "arrow.clockwise", action: {
+                            print("Refresh")
+                        }),
+                        trailingAction: .init(symbol: "xmark", action: {
+                            print("Close Tab")
+                            
+                        })) {
+                            DummyView()
+                        }
+                        .navigationTitle("Homme")
+                        .navigationBarTitleDisplayMode(.inline)
+            }
         }
     }
     

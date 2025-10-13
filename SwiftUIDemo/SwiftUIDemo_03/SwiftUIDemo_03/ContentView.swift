@@ -43,7 +43,7 @@ struct ContentView: View {
         LazyVGrid(columns: Array(repeating: GridItem(), count: 2)) {
             ForEach(1...50,id: \.self) { _ in
                 RoundedRectangle(cornerRadius: 25)
-                    .fill(.red.gradient)
+                    .fill(.yellow.gradient)
                     .frame(height: 160)
                     .overlay(alignment: .topLeading) {
                         VStack(alignment: .leading, spacing: 6){

@@ -9,6 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+
+        
+
         GeometryReader{
         
         let safeAreaInsets =  $0.safeAreaInsets

@@ -20,6 +20,12 @@ struct PullEffectScrollerView<Content: View>: View {
     @GestureState private var isGestureActive: Bool = false
     @State private var scrollOffset : CGFloat = 0
     @State private var initialScrollOffset:CGFloat = 0
+    @State private var activePostion:ActionPosition?
+    @State private var hapticsTrigger: Bool = false
+
+
+
+    @Namespace private var animation
     
     
     var body: some View {
@@ -50,20 +56,42 @@ struct PullEffectScrollerView<Content: View>: View {
                     let progress = min((max(translationY / dragDistance,0)), 1)
                     effectProgress = progress
                     
+                    guard translationY >= dragDistance else {
+                        activePostion = nil
+                        return
+                    }
+                    
+                    let translationX = value.translation.width
+                    let indexProgress = translationX / dragDistance
+                    let index: Int = -indexProgress > 0.5 ? -1  :(indexProgress > 0.5 ? 1 : 0)
+                    
+                    let landingAction = ActionPosition.allCases.first(where: {$0.rawValue == index})
+                    if activePostion != landingAction {
+                        hapticsTrigger.toggle()
+                    }
+                    
+                    
+                    activePostion = landingAction
+                    
+                    
                 })
                 .onEnded({value in
-                    
+                    guard effectProgress != 0 else {return}
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        effectProgress = 0
+                    }
                 })
             
             
         )
         
         
-        .overlay(alignment: .top){
+        .background(alignment: .top){
              ActionView()
                 .padding(.top,actionTopPadding)
                 .ignoresSafeArea()
         }
+        .sensoryFeedback(.impact, trigger: hapticsTrigger)
 
     }
     // action view
@@ -76,12 +104,15 @@ struct PullEffectScrollerView<Content: View>: View {
             
             
             ActionButton(.leading)
+                .offset(x: 30 * (1 - delayedProgress))
                 .opacity(delayedProgress)
             
             ActionButton(.center)
+                .blur(radius: 10 * (1 - effectProgress))
                 .opacity(effectProgress)
             
             ActionButton(.trailing)
+                .offset(x: -30 * (1 - delayedProgress))
                 .opacity(delayedProgress)
 
             
@@ -99,21 +130,26 @@ struct PullEffectScrollerView<Content: View>: View {
             .fontWeight(.semibold)
             .frame(width: 60,height: 60)
             .background{
-                ZStack{
-                    Rectangle()
-                        .fill(.background)
-                    Rectangle()
-                        .fill(.gray.opacity(0.2))
+                if activePostion == position{
+                    
+                    ZStack{
+                        Rectangle()
+                            .fill(.background)
+                        Rectangle()
+                            .fill(.gray.opacity(0.2))
+                    }
+                    .clipShape(.rect(cornerRadius: 30))
+                    .compositingGroup()
+                    .matchedTransitionSource(id: "INDICATOR", in: animation)
                 }
-                .clipShape(.rect(cornerRadius: 30))
-                .compositingGroup()
-                
             }
             .frame(maxWidth:.infinity)
+            .compositingGroup()
+            .animation(.easeInOut(duration: 0.25), value: activePostion)
         
     }
     
-    private enum ActionPosition:Int{
+    private enum ActionPosition:Int , CaseIterable{
         case leading = -1
         case center = 0
         case trailing = 1

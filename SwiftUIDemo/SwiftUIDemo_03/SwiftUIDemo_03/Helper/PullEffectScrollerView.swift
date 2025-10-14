@@ -21,6 +21,7 @@ struct PullEffectScrollerView<Content: View>: View {
     @State private var scrollOffset : CGFloat = 0
     @State private var initialScrollOffset:CGFloat = 0
     @State private var activePostion:ActionPosition?
+    @State private var scaleEffect:Bool = false
     @State private var hapticsTrigger: Bool = false
 
 
@@ -77,15 +78,41 @@ struct PullEffectScrollerView<Content: View>: View {
                 })
                 .onEnded({value in
                     guard effectProgress != 0 else {return}
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        effectProgress = 0
+                    
+                    if let activePostion {
+                        withAnimation(.easeInOut(duration: 0.25),completionCriteria:
+                                .logicallyComplete, {
+                                scaleEffect = true
+                            
+                        }, completion: {
+                            scaleEffect = false
+                            effectProgress = 0
+                            self.activePostion = nil
+                        })
+                        
+                        switch activePostion {
+                            case .leading :leadingAction.action()
+                                
+                            case .center: centerAction.action()
+                                
+                            case .trailing:trailingAction.action()
+                            
+                        }
+                        
+                        
+                        
+                        
+                        
+                    }else {
+                        
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            effectProgress = 0
+                        }
                     }
-                })
-            
-            
+                }),
+            isEnabled: !scaleEffect
+                
         )
-        
-        
         .background(alignment: .top){
              ActionView()
                 .padding(.top,actionTopPadding)
@@ -118,6 +145,7 @@ struct PullEffectScrollerView<Content: View>: View {
             
         }
         .padding(.horizontal,20)
+        .opacity(scaleEffect ? 0 : 1)
     }
     // action button
     @ViewBuilder
@@ -129,6 +157,9 @@ struct PullEffectScrollerView<Content: View>: View {
             .font(.title2)
             .fontWeight(.semibold)
             .frame(width: 60,height: 60)
+            .opacity(scaleEffect ? 0 : 1)
+            .animation(.linear(duration: 0.05), value: scaleEffect)
+
             .background{
                 if activePostion == position{
                     
@@ -138,9 +169,10 @@ struct PullEffectScrollerView<Content: View>: View {
                         Rectangle()
                             .fill(.gray.opacity(0.2))
                     }
-                    .clipShape(.rect(cornerRadius: 30))
+                    .clipShape(.rect(cornerRadius:scaleEffect ? 0 : 30))
                     .compositingGroup()
                     .matchedTransitionSource(id: "INDICATOR", in: animation)
+                    .scaleEffect(scaleEffect ? 20 : 1,anchor: .bottom)
                 }
             }
             .frame(maxWidth:.infinity)
